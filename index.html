@@ -11,340 +11,249 @@
   <title>My Workouts</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, 'Inter', system-ui, sans-serif;
-      background: #0F0F12;
-      color: #F0EDE8;
-      min-height: 100vh;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    }
-
+    body { font-family: -apple-system, system-ui, sans-serif; background: #0F0F12; color: #F0EDE8; min-height: 100vh; }
     .app { max-width: 480px; margin: 0 auto; padding: 24px 16px 40px; }
-
-    /* Header */
-    .header { margin-bottom: 20px; }
     .eyebrow { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #555; font-weight: 600; margin-bottom: 6px; }
-    .title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
-    .hint { font-size: 12px; color: #555; margin-top: 5px; min-height: 18px; transition: color 0.2s; }
-    .hint.active { color: #8888cc; }
+    h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+    #hint { font-size: 12px; color: #555; margin-bottom: 18px; min-height: 16px; }
+    #hint.active { color: #8888cc; }
 
-    /* Stats */
-    .stats { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-    .stat { background: #1A1A20; border: 1px solid #2a2a30; border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
-    .stat-val { font-size: 18px; font-weight: 700; }
-    .stat-label { font-size: 11px; color: #666; }
-    .stat-sub { font-size: 11px; color: #444; font-weight: 400; }
+    .stats { display: flex; gap: 8px; margin-bottom: 18px; }
+    .stat { background: #1A1A20; border: 1px solid #252530; border-radius: 8px; padding: 7px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-val { font-size: 16px; font-weight: 700; }
+    .stat-frac { font-size: 10px; color: #444; }
+    .stat-lbl { font-size: 10px; color: #666; }
 
-    /* Week */
-    .week { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    #week { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .day-row { background: #1A1A20; border: 1.5px solid #2A2A36; border-radius: 10px; transition: border-color 0.15s; }
+    .day-row.selecting { border-color: #4a4aaa; }
+    .day-inner { display: flex; align-items: center; gap: 6px; padding: 6px 8px; min-height: 42px; }
+    .day-lbl { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #555; width: 28px; flex-shrink: 0; }
+    .day-cards { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .rest-lbl { font-size: 10px; color: #2a2a36; }
 
-    .day-row {
-      background: #1A1A20;
-      border: 1.5px solid #2E2E38;
-      border-radius: 12px;
-      overflow: hidden;
-      transition: border-color 0.15s;
-    }
-    .day-row.drop-target { border-color: #5555aa; background: #1E1E2A; }
+    .add-btn { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: #5555aa22; border: 1.5px dashed #5555aa88; color: #7777bb; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .add-btn:active { background: #5555aa44; }
 
-    .day-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 12px 6px;
-      border-bottom: 1px solid #222;
-    }
-    .day-name { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #555; }
-    .drop-hint { font-size: 11px; color: #5555aa; }
+    .card { display: flex; align-items: center; gap: 6px; width: 100%; border: 1.5px solid transparent; border-radius: 6px; padding: 5px 7px; cursor: pointer; overflow: hidden; }
+    .card:active { opacity: 0.65; }
+    .c-icon { font-size: 13px; flex-shrink: 0; }
+    .c-name { font-size: 12px; font-weight: 700; flex-shrink: 0; white-space: nowrap; }
+    .c-detail { font-size: 10px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .c-tick { flex-shrink: 0; margin-left: 4px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #888; background: none; cursor: pointer; font-size: 10px; color: transparent; display: flex; align-items: center; justify-content: center; }
+    .c-tick.ticked { color: #fff; }
+    .c-rm { flex-shrink: 0; background: none; border: none; color: #3a3a3a; font-size: 15px; cursor: pointer; padding: 0 2px; line-height: 1; }
+    .c-rm:active { color: #777; }
 
-    .day-body { padding: 8px 10px; min-height: 52px; display: flex; align-items: center; }
-    .day-body.empty { justify-content: center; }
-    .rest-label { font-size: 11px; color: #2a2a30; }
+    .shelf { background: #14141A; border: 1.5px solid #2A2A36; border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+    .shelf-ttl { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #444; margin-bottom: 8px; }
+    #shelf-cards { display: flex; flex-direction: column; gap: 4px; }
 
-    /* Workout card */
-    .card {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-      background: transparent;
-      border: 1.5px solid transparent;
-      border-radius: 8px;
-      padding: 8px 10px;
-      cursor: pointer;
-      transition: all 0.15s;
-      text-align: left;
-      color: inherit;
-    }
-    .card:active { opacity: 0.7; }
-    .card.selected { box-shadow: 0 0 0 2px var(--c); }
-
-    .card-icon { font-size: 20px; flex-shrink: 0; }
-    .card-info { flex: 1; min-width: 0; }
-    .card-label { font-size: 12px; font-weight: 700; margin-bottom: 1px; }
-    .card-detail { font-size: 10px; color: #777; }
-
-    .card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-    /* Checkbox */
-    .check-btn {
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      border: 2px solid var(--c);
-      background: none;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.15s;
-      font-size: 13px;
-      color: transparent;
-    }
-    .check-btn.done {
-      background: var(--c);
-      color: #fff;
-    }
-
-    .remove-btn {
-      background: none; border: none; color: #444; font-size: 16px;
-      cursor: pointer; padding: 2px 4px; line-height: 1;
-    }
-    .remove-btn:active { color: #888; }
-
-    /* Shelf */
-    .shelf {
-      background: #14141A;
-      border: 1.5px solid #2E2E38;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 16px;
-    }
-    .shelf-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #444; margin-bottom: 10px; }
-    .shelf-items { display: flex; flex-direction: column; gap: 6px; }
-    .shelf-empty { font-size: 12px; color: #333; }
-
-    /* Cancel */
-    .cancel-row { text-align: center; padding: 10px; color: #444; font-size: 12px; cursor: pointer; }
-    .cancel-row:active { color: #888; }
-
-    /* Reset */
-    .reset-row { text-align: center; margin-top: 8px; }
-    .reset-btn { background: none; border: none; color: #333; font-size: 11px; cursor: pointer; text-decoration: underline; }
+    #cancel-btn { text-align: center; padding: 8px; font-size: 11px; color: #555; cursor: pointer; display: none; }
+    #cancel-btn:active { color: #999; }
+    .reset-row { text-align: center; margin-top: 6px; }
+    .reset-btn { background: none; border: none; color: #2a2a36; font-size: 11px; cursor: pointer; text-decoration: underline; }
     .reset-btn:active { color: #666; }
   </style>
 </head>
 <body>
 <div class="app">
-  <div class="header">
-    <div class="eyebrow">Weekly Planner</div>
-    <div class="title">My Workouts</div>
-    <div class="hint" id="hint">Tap a workout to move it</div>
-  </div>
-
+  <div class="eyebrow">Weekly Planner</div>
+  <h1>My Workouts</h1>
+  <div id="hint">Tap a workout to move it &middot; Tap &circ; to tick off</div>
   <div class="stats" id="stats"></div>
-  <div class="week" id="week"></div>
-
-  <div class="shelf" id="shelf">
-    <div class="shelf-title">Unscheduled</div>
-    <div class="shelf-items" id="shelf-items"></div>
+  <div id="week"></div>
+  <div class="shelf">
+    <div class="shelf-ttl">Unscheduled</div>
+    <div id="shelf-cards"></div>
   </div>
-
-  <div class="cancel-row" id="cancel-row" style="display:none" onclick="cancelSelection()">✕ Cancel selection</div>
-  <div class="reset-row"><button class="reset-btn" onclick="resetWeek()">Reset week</button></div>
+  <div id="cancel-btn">✕ Cancel</div>
+  <div class="reset-row"><button class="reset-btn" id="reset-btn">Reset week</button></div>
 </div>
-
 <script>
-const WORKOUTS = [
-  { id: "intervals",  label: "Intervals",  detail: "6 × 800m @ 4:45/km",     type: "run",      color: "#E8563A", icon: "⚡" },
-  { id: "tempo",      label: "Tempo Run",  detail: "20–25 min @ 5:10/km",    type: "run",      color: "#E8563A", icon: "🏃" },
-  { id: "long-run",   label: "Long Run",   detail: "12–14km @ 6:00–6:30/km", type: "run",      color: "#E8563A", icon: "🛤️" },
-  { id: "strength-a", label: "Strength A", detail: "Upper body",              type: "strength", color: "#2D6BE4", icon: "🏋️" },
-  { id: "strength-b", label: "Strength B", detail: "Lower body",              type: "strength", color: "#2D6BE4", icon: "🦵" },
-  { id: "strength-c", label: "Strength C", detail: "Upper body",              type: "strength", color: "#2D6BE4", icon: "💪" },
-  { id: "strength-d", label: "Strength D", detail: "Lower body",              type: "strength", color: "#2D6BE4", icon: "🔥" },
+var WORKOUTS = [
+  { id:"intervals", label:"Intervals",  detail:"6x800m @ 4:45/km",    type:"run",      color:"#E8563A", icon:"⚡"    },
+  { id:"tempo",     label:"Tempo",      detail:"20-25min @ 5:10/km",   type:"run",      color:"#E8563A", icon:"🏃\u200d♀️" },
+  { id:"longrun",   label:"Long Run",   detail:"12-14km @ 6:00/km",    type:"run",      color:"#E8563A", icon:"🛤️"   },
+  { id:"stra",      label:"Strength A", detail:"Upper body",            type:"strength", color:"#2D6BE4", icon:"🏋️\u200d♀️" },
+  { id:"strb",      label:"Strength B", detail:"Lower body",            type:"strength", color:"#2D6BE4", icon:"🦵"   },
+  { id:"strc",      label:"Strength C", detail:"Upper body",            type:"strength", color:"#2D6BE4", icon:"💪"   },
+  { id:"strd",      label:"Strength D", detail:"Lower body",            type:"strength", color:"#2D6BE4", icon:"🔥"   }
 ];
+var DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+var DEF_SCHED = { Sun:["stra"], Mon:["strb"], Tue:["intervals"], Wed:[], Thu:["strc"], Fri:[], Sat:["longrun"] };
+var DEF_BANK  = ["tempo","strd"];
 
-const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function wk(id) { for(var i=0;i<WORKOUTS.length;i++) if(WORKOUTS[i].id===id) return WORKOUTS[i]; return null; }
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
-const DEFAULT_SCHEDULE = { Sun:"strength-a", Mon:"strength-b", Tue:"intervals", Wed:null, Thu:"strength-c", Fri:null, Sat:"long-run" };
-const DEFAULT_BANK = ["tempo","strength-d"];
-
-const WK = id => WORKOUTS.find(w => w.id === id);
-
-function loadState() {
-  try {
-    const s = localStorage.getItem("workout-state");
-    if (s) return JSON.parse(s);
-  } catch(e) {}
-  return { schedule: {...DEFAULT_SCHEDULE}, bank: [...DEFAULT_BANK], done: {} };
+function load() {
+  try { var s=localStorage.getItem("wk-v4"); if(s) return JSON.parse(s); } catch(e){}
+  return { sched:clone(DEF_SCHED), bank:DEF_BANK.slice(), done:{} };
 }
+function save() { try { localStorage.setItem("wk-v4",JSON.stringify(st)); } catch(e){} }
 
-function saveState() {
-  localStorage.setItem("workout-state", JSON.stringify(state));
-}
+var st = load();
+var sel = null;
 
-function resetWeek() {
-  if (!confirm("Clear all ticks and reset schedule?")) return;
-  state = { schedule: {...DEFAULT_SCHEDULE}, bank: [...DEFAULT_BANK], done: {} };
-  saveState();
+document.getElementById("cancel-btn").onclick = function() { sel=null; render(); };
+document.getElementById("reset-btn").onclick = function() {
+  if(!confirm("Reset schedule and clear all ticks?")) return;
+  st = { sched:clone(DEF_SCHED), bank:DEF_BANK.slice(), done:{} };
+  save(); render();
+};
+
+function pick(id, from, day) {
+  if(sel && sel.id===id && sel.from===from && sel.day===day) sel=null;
+  else sel = { id:id, from:from, day:day };
   render();
 }
 
-let state = loadState();
-let selected = null; // { id, from: 'bank'|'day', day? }
-
-function selectWorkout(id, from, day) {
-  if (selected && selected.id === id && selected.from === from && selected.day === day) {
-    selected = null;
+function place(day) {
+  if(!sel) return;
+  var id=sel.id, from=sel.from, srcDay=sel.day;
+  if(from==="bank") {
+    st.bank = st.bank.filter(function(b){ return b!==id; });
   } else {
-    selected = { id, from, day };
+    if(srcDay===day){ sel=null; render(); return; }
+    st.sched[srcDay] = st.sched[srcDay].filter(function(i){ return i!==id; });
   }
-  render();
+  if(!st.sched[day]) st.sched[day]=[];
+  st.sched[day].push(id);
+  sel=null; save(); render();
 }
 
-function cancelSelection() {
-  selected = null;
-  render();
+function unschedule(id, day) {
+  st.sched[day] = st.sched[day].filter(function(i){ return i!==id; });
+  st.bank.push(id);
+  if(sel && sel.id===id) sel=null;
+  save(); render();
 }
 
-function placeOnDay(day) {
-  if (!selected) return;
-  const { id: srcId, from: srcFrom, day: srcDay } = selected;
-  const existing = state.schedule[day];
+function tick(key) { st.done[key]=!st.done[key]; save(); render(); }
+function dkey(id,day) { return day ? day+":"+id : id; }
 
-  if (srcFrom === "bank") {
-    state.bank = state.bank.filter(b => b !== srcId);
-    if (existing) state.bank.push(existing);
-    state.schedule[day] = srcId;
-  } else {
-    if (srcDay === day) { selected = null; render(); return; }
-    state.schedule[srcDay] = existing || null;
-    state.schedule[day] = srcId;
+function makeCard(id, from, day, showRemove) {
+  var w = wk(id); if(!w) return null;
+  var isSel = sel && sel.id===id && sel.from===from && sel.day===day;
+  var isDone = !!st.done[dkey(id,day)];
+
+  var card = document.createElement("div");
+  card.className = "card";
+  card.style.background = w.color + (isSel?"2e":"18");
+  card.style.borderColor = w.color + (isSel?"cc":"44");
+  card.style.opacity = isDone ? "0.45" : "1";
+  if(isSel) card.style.boxShadow = "0 0 0 2px "+w.color+"66";
+
+  card.onclick = function() { pick(id, from, day); };
+
+  var icon = document.createElement("span");
+  icon.className = "c-icon"; icon.textContent = w.icon;
+
+  var name = document.createElement("span");
+  name.className = "c-name"; name.style.color = w.color; name.textContent = w.label;
+
+  var detail = document.createElement("span");
+  detail.className = "c-detail"; detail.textContent = w.detail;
+
+  var tickBtn = document.createElement("button");
+  tickBtn.className = "c-tick" + (isDone?" ticked":"");
+  tickBtn.style.borderColor = w.color;
+  tickBtn.style.background = isDone ? w.color : "none";
+  tickBtn.textContent = isDone ? "✓" : "";
+  tickBtn.onclick = function(e) { e.stopPropagation(); tick(dkey(id,day)); };
+
+  card.appendChild(icon);
+  card.appendChild(name);
+  card.appendChild(detail);
+  card.appendChild(tickBtn);
+
+  if(showRemove && !sel) {
+    var rm = document.createElement("button");
+    rm.className = "c-rm"; rm.textContent = "×";
+    rm.onclick = function(e) { e.stopPropagation(); unschedule(id,day); };
+    card.appendChild(rm);
   }
 
-  selected = null;
-  saveState();
-  render();
-}
-
-function removeFromDay(day) {
-  const id = state.schedule[day];
-  if (!id) return;
-  state.bank.push(id);
-  state.schedule[day] = null;
-  if (selected) selected = null;
-  saveState();
-  render();
-}
-
-function toggleDone(id, day) {
-  const key = day ? `${day}:${id}` : id;
-  state.done[key] = !state.done[key];
-  saveState();
-  render();
-}
-
-function isDone(id, day) {
-  const key = day ? `${day}:${id}` : id;
-  return !!state.done[key];
+  return card;
 }
 
 function render() {
-  const hasSelected = !!selected;
+  var hasSel = !!sel;
 
-  // Hint
-  const hint = document.getElementById("hint");
-  if (hasSelected) {
-    hint.textContent = `"${WK(selected.id)?.label}" selected — tap a day to place it`;
-    hint.className = "hint active";
-  } else {
-    hint.textContent = "Tap a workout to move it, or tick when done";
-    hint.className = "hint";
-  }
+  var hint = document.getElementById("hint");
+  hint.innerHTML = hasSel
+    ? "\"" + wk(sel.id).label + "\" selected &mdash; tap &plus; on a day to place it"
+    : "Tap a workout to move it &middot; Tap &circ; to tick off";
+  hint.className = hasSel ? "active" : "";
 
   // Stats
-  const runs = Object.values(state.schedule).filter(id => id && WK(id)?.type === "run").length;
-  const str  = Object.values(state.schedule).filter(id => id && WK(id)?.type === "strength").length;
-  const doneCount = Object.values(state.done).filter(Boolean).length;
-  document.getElementById("stats").innerHTML = `
-    <div class="stat"><span class="stat-val" style="color:#E8563A">${runs}<span class="stat-sub">/3</span></span><span class="stat-label">Runs</span></div>
-    <div class="stat"><span class="stat-val" style="color:#2D6BE4">${str}<span class="stat-sub">/4</span></span><span class="stat-label">Strength</span></div>
-    <div class="stat"><span class="stat-val" style="color:#4CAF50">${doneCount}<span class="stat-sub">/7</span></span><span class="stat-label">Done</span></div>
-  `;
+  var all = [];
+  for(var d=0;d<DAYS.length;d++) { var arr=st.sched[DAYS[d]]||[]; for(var k=0;k<arr.length;k++) all.push(arr[k]); }
+  var runs=0, strs=0, doneCount=0;
+  for(var i=0;i<all.length;i++) { var w=wk(all[i]); if(w&&w.type==="run") runs++; if(w&&w.type==="strength") strs++; }
+  for(var key in st.done) { if(st.done[key]) doneCount++; }
+  document.getElementById("stats").innerHTML =
+    "<div class='stat'><span class='stat-val' style='color:#E8563A'>"+runs+"<span class='stat-frac'>/3</span></span><span class='stat-lbl'>Runs</span></div>" +
+    "<div class='stat'><span class='stat-val' style='color:#2D6BE4'>"+strs+"<span class='stat-frac'>/4</span></span><span class='stat-lbl'>Strength</span></div>" +
+    "<div class='stat'><span class='stat-val' style='color:#4CAF50'>"+doneCount+"<span class='stat-frac'>/7</span></span><span class='stat-lbl'>Done</span></div>";
 
   // Week
-  const week = document.getElementById("week");
+  var week = document.getElementById("week");
   week.innerHTML = "";
-  DAYS.forEach(day => {
-    const wid = state.schedule[day];
-    const w = wid ? WK(wid) : null;
-    const isDropTarget = hasSelected && selected.day !== day;
-    const isThisSelected = hasSelected && selected.from === "day" && selected.day === day;
-    const done = wid ? isDone(wid, day) : false;
+  for(var di=0;di<DAYS.length;di++) {
+    var day = DAYS[di];
+    var ids = st.sched[day]||[];
 
-    const row = document.createElement("div");
-    row.className = "day-row" + (isDropTarget ? " drop-target" : "");
+    var row = document.createElement("div");
+    row.className = "day-row" + (hasSel?" selecting":"");
 
-    let cardHTML = "";
-    if (w) {
-      const sel = isThisSelected;
-      cardHTML = `
-        <button class="card${sel ? " selected" : ""}" style="--c:${w.color}; background:${w.color}${sel ? "33" : "18"}; border-color:${w.color}${sel ? "cc" : "55"}; opacity:${done ? 0.5 : 1}"
-          onclick="${hasSelected ? `placeOnDay('${day}')` : `selectWorkout('${wid}','day','${day}')`}">
-          <span class="card-icon">${w.icon}</span>
-          <span class="card-info">
-            <div class="card-label" style="color:${w.color}">${w.label}</div>
-            <div class="card-detail">${w.detail}</div>
-          </span>
-          <span class="card-actions" onclick="event.stopPropagation()">
-            <button class="check-btn${done ? " done" : ""}" style="--c:${w.color}" onclick="toggleDone('${wid}','${day}')">${done ? "✓" : ""}</button>
-            ${!hasSelected ? `<button class="remove-btn" onclick="removeFromDay('${day}')">×</button>` : ""}
-          </span>
-        </button>`;
+    var inner = document.createElement("div");
+    inner.className = "day-inner";
+
+    var lbl = document.createElement("span");
+    lbl.className = "day-lbl"; lbl.textContent = day;
+
+    var cards = document.createElement("div");
+    cards.className = "day-cards";
+    if(ids.length===0) {
+      var rest = document.createElement("span");
+      rest.className = "rest-lbl"; rest.textContent = "Rest";
+      cards.appendChild(rest);
+    } else {
+      for(var ci=0;ci<ids.length;ci++) {
+        var c = makeCard(ids[ci],"day",day,true);
+        if(c) cards.appendChild(c);
+      }
     }
 
-    row.innerHTML = `
-      <div class="day-header">
-        <span class="day-name">${day}</span>
-        ${isDropTarget && !w ? '<span class="drop-hint">＋ place here</span>' : ''}
-        ${isDropTarget && w ? '<span class="drop-hint">swap</span>' : ''}
-      </div>
-      <div class="day-body${w ? "" : " empty"}" ${!w && hasSelected ? `onclick="placeOnDay('${day}')"` : ""} style="${!w && hasSelected ? "cursor:pointer" : ""}">
-        ${w ? cardHTML : `<span class="rest-label">Rest</span>`}
-      </div>`;
+    inner.appendChild(lbl);
+    inner.appendChild(cards);
 
+    if(hasSel) {
+      var addBtn = document.createElement("button");
+      addBtn.className = "add-btn"; addBtn.textContent = "+";
+      (function(d){ addBtn.onclick = function(){ place(d); }; })(day);
+      inner.appendChild(addBtn);
+    }
+
+    row.appendChild(inner);
     week.appendChild(row);
-  });
-
-  // Shelf
-  const items = document.getElementById("shelf-items");
-  items.innerHTML = "";
-  if (state.bank.length === 0) {
-    items.innerHTML = '<span class="shelf-empty">All workouts scheduled ✓</span>';
-  } else {
-    state.bank.forEach(id => {
-      const w = WK(id);
-      const sel = selected && selected.id === id && selected.from === "bank";
-      const done = isDone(id, null);
-      const el = document.createElement("div");
-      el.innerHTML = `
-        <button class="card${sel ? " selected" : ""}" style="--c:${w.color}; background:${w.color}${sel ? "33" : "18"}; border-color:${w.color}${sel ? "cc" : "55"}; opacity:${done ? 0.5 : 1}"
-          onclick="selectWorkout('${id}','bank',undefined)">
-          <span class="card-icon">${w.icon}</span>
-          <span class="card-info">
-            <div class="card-label" style="color:${w.color}">${w.label}</div>
-            <div class="card-detail">${w.detail}</div>
-          </span>
-          <span class="card-actions" onclick="event.stopPropagation()">
-            <button class="check-btn${done ? " done" : ""}" style="--c:${w.color}" onclick="toggleDone('${id}',null)">${done ? "✓" : ""}</button>
-          </span>
-        </button>`;
-      items.appendChild(el.firstElementChild);
-    });
   }
 
-  // Cancel
-  document.getElementById("cancel-row").style.display = hasSelected ? "block" : "none";
+  // Shelf
+  var shelf = document.getElementById("shelf-cards");
+  shelf.innerHTML = "";
+  if(st.bank.length===0) {
+    shelf.innerHTML = "<span style='font-size:11px;color:#2a2a36'>All scheduled ✓</span>";
+  } else {
+    for(var bi=0;bi<st.bank.length;bi++) {
+      var bc = makeCard(st.bank[bi],"bank",null,false);
+      if(bc) shelf.appendChild(bc);
+    }
+  }
+
+  document.getElementById("cancel-btn").style.display = hasSel ? "block" : "none";
 }
 
 render();
